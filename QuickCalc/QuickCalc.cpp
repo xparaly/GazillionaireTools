@@ -13,6 +13,20 @@ using namespace std;
 #include <vector>
 #include <map>
 
+static bool is_number(const std::string& s)
+{
+	std::string::const_iterator it = s.begin();
+	while (it != s.end() && std::isdigit(*it)) ++it;
+	return !s.empty() && it == s.end();
+}
+
+static void print_map(map<int, string> map) {
+	for (int i = 1; i < 19; i++) {
+		std::cout << i << ": " << map[i] << endl;
+	}
+	std::cout << endl;
+}
+
 int main(int argc, char* argv[])
 {
 	map<int, string> prod_index;
@@ -55,9 +69,10 @@ int main(int argc, char* argv[])
 	prod_price["jelly beans"] = 30;
 	prod_price["cantaloupe"] = 15;
 
-	int index;
+	int index, tons;
 	string commodity;
-	float percent1, percent2, profit_per_ton;
+	float percent1, percent2, profit_per_ton, total_profit;
+	profit_per_ton = 0;
 
 	int difficulty = 0;
 
@@ -89,30 +104,64 @@ int main(int argc, char* argv[])
 		break;
 	}
 
-	for (int i = 1; i < 19; i++) {	
-		cout << i << ": " << prod_index[i] << endl;
-	}
-	cout << endl;
 
+	print_map(prod_index);
+
+	string inString;
+	int arg = 1;
 	while (true) {
 
-		cin >> index >> percent1 >> percent2;
+		cin >> inString;
 
-		if (index == 0) {
-			cout << "exiting...";
-			return 0;
-		};
+		if (is_number(inString)) {
+			//cout << inString << " is a number! " << endl;
+			switch (arg) {
+			case 1:
+				index = stoi(inString);
+				//cout << "Now index = " << index << endl;
+				break;
+			case 2:
+				percent1 = stof(inString);
+				//cout << "Now percent1 = " << percent1 << endl;
 
-		if (percent1 < 0 || percent1 > 100 || percent2 < 0 || percent2 > 100) {
-			cout << "NUMBER MUST BE BETWEEN 0 AND 100" << endl;
-			std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-			continue;
+				if (percent1 < 0 || percent1 > 100) {
+					cout << "PERCENTAGE MUST BE BETWEEN 0 AND 100" << endl;
+					std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+				}
+				break;
+			case 3:
+				percent2 = stof(inString);
+				//cout << "Now percent2 = " << percent2 << endl;
+				if (percent2 < 0 || percent2 > 100) {
+					cout << "PERCENTAGE MUST BE BETWEEN 0 AND 100" << endl;
+					std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+				}
+				arg = 1;
+				profit_per_ton = multiplier*prod_price[prod_index[index]] * (percent1 - percent2) / 100;
+				cout << prod_index[index] << ": " << percent1 << "% - " << percent2 << "%: $" << profit_per_ton << endl << endl;
+				continue;
+			}
+			arg++;
+		} else {	// not an int
+			if (inString == "exit") {
+				cout << "exiting... " << endl;
+				return 0;
+			} else if (inString == "map") {
+				print_map(prod_index);
+			} else if (inString.front()=='*') {
+				inString = inString.substr(1, inString.length() - 1);
+				if (is_number(inString)) {
+					tons = stoi(inString);
+					total_profit = profit_per_ton * tons;
+					cout << "total profit: $" << total_profit << endl;
+				} else {
+					cout << "received '*', but rest of string was not an integer." << endl;
+				}
+			} else {
+				cout << "invalid string input." << endl;
+				arg = 1;
+			}
 		}
-
-		std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');			// Ignore to the end of line
-		
-		profit_per_ton = multiplier*prod_price[prod_index[index]] * (percent1 - percent2) / 100;
-		cout << prod_index[index] << ": " << percent1 << "% - " << percent2 << "%: $" << profit_per_ton << endl << endl;
 	}
 
 	return 0;
